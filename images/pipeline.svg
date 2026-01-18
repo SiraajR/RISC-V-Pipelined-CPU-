@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="140" viewBox="0 0 800 140">
+  <style> .stage{fill:#0b5ea8;stroke:#083a66;stroke-width:2;color:#fff;font:700 14px/1.2 "Segoe UI",Arial,sans-serif} .label{fill:#ffffff;font:700 14px/1.2 "Segoe UI",Arial,sans-serif} .arrow{stroke:#083a66;stroke-width:2;fill:none} </style>
+  <!-- Boxes -->
+  <rect class="stage" x="20"  y="30" width="140" height="60" rx="8"/>
+  <rect class="stage" x="180" y="30" width="140" height="60" rx="8"/>
+  <rect class="stage" x="340" y="30" width="140" height="60" rx="8"/>
+  <rect class="stage" x="500" y="30" width="140" height="60" rx="8"/>
+  <rect class="stage" x="660" y="30" width="120" height="60" rx="8"/>
+  <!-- Labels -->
+  <text class="label" x="90"  y="68" text-anchor="middle">IF</text>
+  <text class="label" x="250" y="68" text-anchor="middle">ID</text>
+  <text class="label" x="410" y="68" text-anchor="middle">EX</text>
+  <text class="label" x="570" y="68" text-anchor="middle">MEM</text>
+  <text class="label" x="720" y="68" text-anchor="middle">WB</text>
+  <!-- Arrows -->
+  <path class="arrow" d="M160 60 L180 60" marker-end="url(#arrow)" />
+  <path class="arrow" d="M320 60 L340 60" marker-end="url(#arrow)" />
+  <path class="arrow" d="M480 60 L500 60" marker-end="url(#arrow)" />
+  <path class="arrow" d="M640 60 L660 60" marker-end="url(#arrow)" />
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#083a66" />
+    </marker>
+  </defs>
+  <!-- Stage names below -->
+  <text x="90"  y="100" text-anchor="middle" font-family="Segoe UI, Arial" font-size="12" fill="#083a66">Instruction Fetch (IF)</text>
+  <text x="250" y="100" text-anchor="middle" font-family="Segoe UI, Arial" font-size="12" fill="#083a66">Instruction Decode (ID)</text>
+  <text x="410" y="100" text-anchor="middle" font-family="Segoe UI, Arial" font-size="12" fill="#083a66">Execute (EX)</text>
+  <text x="570" y="100" text-anchor="middle" font-family="Segoe UI, Arial" font-size="12" fill="#083a66">Memory (MEM)</text>
+  <text x="720" y="100" text-anchor="middle" font-family="Segoe UI, Arial" font-size="12" fill="#083a66">Write Back (WB)</text>
+</svg>
