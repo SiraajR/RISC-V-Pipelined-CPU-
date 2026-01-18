@@ -1,111 +1,179 @@
-RISC-V RV32I Pipelined CPU
+# RISC‑V RV32I — 5‑Stage Pipelined CPU (SystemVerilog)
 
-This is a 5-stage pipelined implementation of the RISC-V RV32I base integer ISA written in SystemVerilog. The goal of the project was mainly to understand how the ISA maps onto a classic pipeline, and what needs to be done to make hazards, branches, and memory operations behave correctly cycle-by-cycle.
+A compact, educational implementation of the RISC‑V RV32I base integer ISA using a classic 5‑stage pipeline in SystemVerilog. The project was built to experiment with how instructions map to pipeline stages and to explore hazard mitigation techniques such as forwarding, stalls and flushes.
 
-Pipeline Overview
+---
 
-The CPU follows the standard 5-stage design:
+## Table of Contents
+
+- [Overview](#overview)
+- [Pipeline overview](#pipeline-overview)
+- [Instruction support](#instruction-support)
+- [Hazard handling](#hazard-handling)
+  - [Data hazards](#data-hazards)
+  - [Control hazards](#control-hazards)
+- [Memory model](#memory-model)
+- [Testing](#testing)
+- [Why build this](#why-build-this)
+- [Possible extensions](#possible-extensions)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Overview
+
+This repository contains a 5‑stage pipelined CPU that implements the RISC‑V RV32I base integer instruction set. It was implemented primarily for learning and experimentation: to understand the interactions across pipeline stages and the practical handling of hazards.
+
+The pipeline stages are:
 
 IF → ID → EX → MEM → WB
 
+A brief summary:
 
-A quick summary of what happens in each stage:
+- IF: Instruction fetch, default next PC = PC + 4
+- ID: Instruction decode, register-file reads, immediate generation, control generation
+- EX: ALU operations, branch comparisons, compute branch/jump targets
+- MEM: Data memory access for loads/stores
+- WB: Write results back to the register file
 
-IF: fetch instruction at PC, compute next PC (default PC+4)
+---
 
-ID: decode instruction, read register file, generate immediates + control signals
+## Pipeline overview
 
-EX: ALU ops, branch comparisons, compute jump/branch targets
+The design follows the canonical 5‑stage pipeline with separate registers between stages (IF/ID, ID/EX, EX/MEM, MEM/WB). The main control and datapath elements include:
 
-MEM: load/store access
+- Register file (read/write in ID / WB)
+- ALU in EX
+- Forwarding unit to reduce data‑hazard stalls
+- Hazard detection unit to insert stalls on load‑use cases
+- Branch/jump resolution in EX (no prediction)
 
-WB: write result back to register file
+Example instruction flow:
 
-Instruction Support
+```text
+IF: fetch instruction at PC
+ID: decode + read registers + generate immediates
+EX: perform ALU op or compare for branch
+MEM: perform load/store
+WB: write back to register file
+```
 
-Implements the integer base ISA (RV32I):
+---
 
-Arithmetic / Logical: ADD, SUB, XOR, OR, AND, SLT, SLTU, SLL, SRL, SRA
+## Instruction support
 
-Immediate versions: ADDI, ORI, ANDI, SLTI, SLLI, etc.
+Implemented RV32I instructions (sufficient for small test programs and datapath verification):
 
-Memory: LW, SW
+- Arithmetic / Logical: ADD, SUB, XOR, OR, AND, SLT, SLTU, SLL, SRL, SRA
+- Immediate variants: ADDI, ORI, ANDI, SLTI, SLLI, SRLI, SRAI, etc.
+- Memory: LW, SW
+- Control flow: BEQ, BNE, BLT, BGE, JAL, JALR
+- Upper immediates: LUI, AUIPC
 
-Control Flow: BEQ, BNE, BLT, BGE, JAL, JALR
+This instruction set allows basic computational workloads, branching, and memory access to exercise forwarding, stalls, and flushes.
 
-Upper: LUI, AUIPC
+---
 
-This set was enough to run various small test programs and exercise control + data paths.
+## Hazard handling
 
-Hazard Handling
+Hazards are handled via a combination of forwarding, stalling, and flushing.
 
-Pipeline hazards were the trickiest part of the project. The design handles:
+### Data hazards
 
-Data hazards
+- Forwarding implemented for common ALU‑to‑ALU dependencies:
+  - EX → EX
+  - MEM → EX
+- Load‑use hazards require a 1‑cycle stall:
+  - Example:
+    ```
+    LW   x1, 0(x2)
+    ADD  x3, x1, x4   // requires one stall cycle
+    ```
 
-Forwarding paths are implemented for common ALU-to-ALU dependencies:
+### Control hazards
 
-EX → EX
-MEM → EX
+- Branches and jumps are resolved in the EX stage.
+- On a taken branch or jump, IF and ID stages are flushed and the PC is redirected.
+- No dynamic branch prediction is implemented (static not‑taken assumption).
+- Typical penalty: 1–2 cycles depending on instruction ordering and pipeline timing.
 
+---
 
-Load-use hazards still require a 1-cycle stall. Example:
+## Memory model
 
-LW   x1, 0(x2)
-ADD  x3, x1, x4   // stall here
+- Separate instruction and data memories (Harvard style) in the reference design.
+- For unit testing the project uses simple behavioral memory modules that are easy to replace.
+- These memories can be wrapped or replaced with an AXI/AHB or other bus interface if integrating with a larger system.
 
-Control hazards
+---
 
-Branches and jumps are resolved in the EX stage. On a taken branch or jump, IF and ID are flushed and PC is redirected. No prediction is used (always assume not taken).
+## Testing
 
-Penalty depends on the instruction ordering, usually 1–2 cycles.
+Testing was performed with hand‑written RISC‑V assembly test programs that exercise:
 
-Memory Model
+- Basic arithmetic and logical operations
+- Load/store correctness
+- Branch and jump behavior
+- Forwarding and data‑hazard cases
+- Load‑use stall behavior
 
-The design uses separate instruction and data memories. These can be replaced with external modules or wrapped to simulate an AXI/AHB interface. For testing, simple behavioral memories were enough.
+Waveforms were inspected to verify that forwarding, stalls, and flushes occur at the correct cycles. You can test the design using your preferred SystemVerilog simulator (Icarus/Verilator/Questa/ModelSim) with simple testbenches and behavioral memories.
 
-Testing
+Suggested quick checks (examples — adapt to your toolchain and testbench layout):
 
-The CPU was tested using hand-written RISC-V assembly programs to verify:
+```bash
+# Example (pseudo-commands — update for your simulator)
+# Compile
+sv-simulator compile top.sv cpu.sv mem.sv tb.sv
 
-basic arithmetic
+# Run simulation and open waveform
+sv-simulator run --wave=wave.vcd
+gtkwave wave.vcd
+```
 
-loads/stores
+---
 
-branches/jumps
+## Why build this
 
-forwarding cases
+This project provides hands‑on experience with:
 
-load-use stall behavior
+- How ISAs map onto pipeline microarchitecture
+- Why hazards exist and practical methods to mitigate them
+- Interactions between ALU, branch logic, and memory stages
+- How control flow affects timing and pipeline behavior
 
-Waveforms were inspected to confirm that forwarding, stalls, and flushes happened at the right time.
+It is a good stepping stone to more advanced topics such as caches, speculation, and out‑of‑order execution.
 
-Why Build This
+---
 
-The main motivation for the project was to get a concrete feel for:
+## Possible extensions
 
-how ISAs map into microarchitectural pipelines
+If extended, the next steps could include:
 
-why hazards exist and how to deal with them
+- Static or dynamic branch prediction
+- Instruction and data caches
+- Control and Status Registers (CSR) and privilege modes
+- Multiplier/divider unit or full M extension
+- MMU + Sv32 virtual memory support
+- Replace behavioral memories with a bus interface (AXI/AHB)
 
-how ALU/branch/memory stages interact
+---
 
-how control flow affects timing
+## Contributing
 
-It’s also a useful stepping stone toward features like caches, speculation, and eventually out-of-order execution.
+Contributions and improvements are welcome. Possible contributions:
 
-Possible Extensions
+- Add testbenches with automated test vectors
+- Implement extensions listed above
+- Improve documentation and usage examples for simulators
 
-If continued, the next steps would be:
+Feel free to open issues or PRs describing changes or proposals.
 
-static/dynamic branch prediction
+---
 
-instruction/data caches
+## License
 
-CSR + privilege
+Specify your chosen license here (e.g., MIT, Apache 2.0). If you don't have one yet, consider adding a LICENSE file.
 
-multiplier/divider or the full M extension
-
-MMU + SV32
-
-bus interface instead of simple memories
+---
