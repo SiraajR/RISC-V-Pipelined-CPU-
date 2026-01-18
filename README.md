@@ -172,8 +172,3 @@ Feel free to open issues or PRs describing changes or proposals.
 
 ---
 
-## License
-
-Specify your chosen license here (e.g., MIT, Apache 2.0). If you don't have one yet, consider adding a LICENSE file.
-
----
