@@ -1,6 +1,6 @@
 # RISC‑V RV32I — 5‑Stage Pipelined CPU (SystemVerilog)
 
-A compact, educational implementation of the RISC‑V RV32I base integer ISA using a classic 5‑stage pipeline in SystemVerilog. The project was built to experiment with how instructions map to pipeline stages and to explore hazard mitigation techniques such as forwarding, stalls and flushes.
+A compact, educational implementation of the RISC‑V RV32I base integer ISA using a classic 5‑stage pipeline in SystemVerilog. The project was built to experiment with how instructions map to pipelined datapaths and to demonstrate forwarding, stalls, and flushes.
 
 ---
 
@@ -23,7 +23,7 @@ A compact, educational implementation of the RISC‑V RV32I base integer ISA usi
 
 ## Overview
 
-This repository contains a 5‑stage pipelined CPU that implements the RISC‑V RV32I base integer instruction set. It was implemented primarily for learning and experimentation: to understand the interactions across pipeline stages and the practical handling of hazards.
+This repository contains a 5‑stage pipelined CPU that implements the RISC‑V RV32I base integer instruction set. It was implemented primarily for learning and experimentation: to understand the mapping between ISA and microarchitecture and to validate pipeline control and forwarding logic.
 
 The pipeline stages are:
 
@@ -40,6 +40,8 @@ A brief summary:
 ---
 
 ## Pipeline overview
+
+![5‑stage pipeline diagram](images/pipeline.png)
 
 The design follows the canonical 5‑stage pipeline with separate registers between stages (IF/ID, ID/EX, EX/MEM, MEM/WB). The main control and datapath elements include:
 
@@ -118,7 +120,7 @@ Testing was performed with hand‑written RISC‑V assembly test programs that e
 - Forwarding and data‑hazard cases
 - Load‑use stall behavior
 
-Waveforms were inspected to verify that forwarding, stalls, and flushes occur at the correct cycles. You can test the design using your preferred SystemVerilog simulator (Icarus/Verilator/Questa/ModelSim) with simple testbenches and behavioral memories.
+Waveforms were inspected to verify that forwarding, stalls, and flushes occur at the correct cycles. You can test the design using your preferred SystemVerilog simulator (Icarus/Verilator/Questa/[...])
 
 Suggested quick checks (examples — adapt to your toolchain and testbench layout):
 
@@ -171,4 +173,3 @@ Contributions and improvements are welcome. Possible contributions:
 Feel free to open issues or PRs describing changes or proposals.
 
 ---
-
